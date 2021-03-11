@@ -10,19 +10,76 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.find(users => users.username === username);
+
+  if(!user){
+    return response.status(404).json({ error: 'username not found '});
+  }
+
+  request.user = user;
+
+  return next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request;
+
+  if(!user){
+    return response.status(403).json({ error: 'user not found '});
+  }
+
+  if(user.pro){
+    return next();
+  }
+  
+  if(!user.pro && user.todos < 10){
+    return next();
+  }
+  else{
+    return response.status(403).json({ error: 'to add more tasks active pro mode'});
+  }
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  user = users.find(users => users.username === username);
+
+  if(!user){
+    return response.status(404).json({ error: 'user not exists'});
+  }
+
+  if(!validate(id)){
+    return response.status(400).json({ error:"Invalid id" });
+  }
+
+  task = user.todos.find(tasks => tasks.id === id);
+
+  if(!task){
+    return response.status(404).json({ error: 'task does not exists' });
+  }
+
+  request.todo = task;
+  request.user = user;
+
+  return next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+
+  const user = users.find( users => users.id === id);
+
+  if(!user){
+    return response.status(404).json({ error: 'user not found !'});
+  }
+
+  request.user = user;
+
+  return next();
 }
 
 app.post('/users', (request, response) => {
